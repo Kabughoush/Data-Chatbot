@@ -1,18 +1,19 @@
 import os
 import sqlite3
 import pandas as pd
+import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, FewShotChatMessagePromptTemplate, PromptTemplate
-import streamlit as st
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, FewShotChatMessagePromptTemplate
+from operator import itemgetter
 
 # Set the OpenAI API key from Streamlit secrets
 os.environ["OPENAI_API_KEY"] = st.secrets["general"]["OPENAI_API_KEY"]
 
 # Path to the SQLite database
-db_path = 'data.sqlite'  # Ensure this path is correct and the file is in the repo
+db_path = 'data.sqlite'
 
 # Initialize the language model
 llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
@@ -41,7 +42,7 @@ examples = [
     },
     {
         'input': "what is price of `1968 Ford Mustang`",
-        "query": "SELECT `buyPrice`, `MSRP` FROM products  WHERE `productName` = '1968 Ford Mustang' LIMIT 1;"
+        "query": "SELECT `buyPrice`, `MSRP` FROM products WHERE `productName` = '1968 Ford Mustang' LIMIT 1;"
     }
 ]
 
@@ -72,6 +73,7 @@ few_shot_prompt = FewShotChatMessagePromptTemplate(
     input_variables=["input"],
 )
 
+
 # Get table information from the SQLite database using Pandas
 def get_table_info(db_path):
     conn = sqlite3.connect(db_path)
@@ -87,6 +89,7 @@ def get_table_info(db_path):
         table_info += f"Table {table_name}: {column_info}\n"
     conn.close()
     return table_info
+
 
 table_info = get_table_info(db_path)
 
@@ -106,12 +109,13 @@ history = ChatMessageHistory()
 
 # Create chains
 generate_query = LLMChain(llm=llm, prompt=final_prompt)
-rephrase_answer = LLMChain(llm=llm, prompt=PromptTemplate.from_template(answer_template))
+rephrase_answer = LLMChain(llm=llm, prompt=ChatPromptTemplate.from_template(answer_template))
 
 chain = (
         generate_query |
         rephrase_answer
 )
+
 
 # Function to handle natural language queries
 def handle_nl_query(nl_query, db_path, history):
@@ -156,18 +160,12 @@ def handle_nl_query(nl_query, db_path, history):
 
         return error_message, pd.DataFrame()
 
-# Streamlit app
-def main():
-    st.title("Data Chatbot")
-    st.write("Ask your data-related questions below:")
 
-    user_input = st.text_area("You:", key="input")
+# Streamlit UI
+st.title("Data Chatbot")
 
-    if st.button("Send"):
-        if user_input:
-            st.write(f"You: {user_input}")
-            answer, _ = handle_nl_query(user_input, db_path, history)
-            st.write(f"Bot: {answer}")
+user_input = st.text_input("You: ", "")
 
-if __name__ == "__main__":
-    main()
+if user_input:
+    answer, _ = handle_nl_query(user_input, db_path, history)
+    st.text_area("Bot:", value=answer, height=200, max_chars=None, key=None)
