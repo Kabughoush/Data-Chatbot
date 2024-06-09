@@ -12,7 +12,6 @@ from operator import itemgetter
 # Set the OpenAI API key from Streamlit secrets
 os.environ["OPENAI_API_KEY"] = st.secrets["general"]["OPENAI_API_KEY"]
 
-
 # Path to the SQLite database
 db_path = 'data.sqlite'
 
@@ -74,7 +73,6 @@ few_shot_prompt = FewShotChatMessagePromptTemplate(
     input_variables=["input"],
 )
 
-
 # Get table information from the SQLite database using Pandas
 def get_table_info(db_path):
     conn = sqlite3.connect(db_path)
@@ -91,14 +89,13 @@ def get_table_info(db_path):
     conn.close()
     return table_info
 
-
 table_info = get_table_info(db_path)
 
 # Create final prompt with few-shot examples and system message
 final_prompt = ChatPromptTemplate.from_messages(
     [
         ("system",
-         f"You are a MySQL expert. Given an input question, create a syntactically correct MySQL query to run. Unless otherwise specified.\n\nHere is the relevant table info: {table_info}\n\nBelow are a number of examples of questions and their corresponding SQL queries."),
+        f"You are a MySQL expert. Given an input question, create a syntactically correct MySQL query to run. Unless otherwise specified.\n\nHere is the relevant table info: {table_info}\n\nBelow are a number of examples of questions and their corresponding SQL queries."),
         few_shot_prompt,
         MessagesPlaceholder(variable_name="messages"),
         ("human", "{input}"),
@@ -116,7 +113,6 @@ chain = (
         generate_query |
         rephrase_answer
 )
-
 
 # Function to handle natural language queries
 def handle_nl_query(nl_query, db_path, history):
@@ -160,7 +156,6 @@ def handle_nl_query(nl_query, db_path, history):
         history.add_ai_message(error_message)
 
         return error_message, pd.DataFrame()
-
 
 # Streamlit UI
 st.title("Data Chatbot")
