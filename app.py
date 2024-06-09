@@ -1,7 +1,7 @@
-import streamlit as st
 import os
 import sqlite3
 import pandas as pd
+import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain_community.chat_message_histories import ChatMessageHistory
@@ -42,7 +42,7 @@ examples = [
     },
     {
         'input': "what is price of `1968 Ford Mustang`",
-        "query": "SELECT `buyPrice`, `MSRP` FROM products  WHERE `productName` = '1968 Ford Mustang' LIMIT 1;"
+        "query": "SELECT `buyPrice`, `MSRP` FROM products WHERE `productName` = '1968 Ford Mustang' LIMIT 1;"
     }
 ]
 
@@ -109,7 +109,7 @@ history = ChatMessageHistory()
 
 # Create chains
 generate_query = LLMChain(llm=llm, prompt=final_prompt)
-rephrase_answer = LLMChain(llm=llm, prompt=PromptTemplate.from_template(answer_template))
+rephrase_answer = LLMChain(llm=llm, prompt=ChatPromptTemplate.from_template(answer_template))
 
 chain = (
         generate_query |
@@ -161,24 +161,11 @@ def handle_nl_query(nl_query, db_path, history):
         return error_message, pd.DataFrame()
 
 
-# Streamlit app code
-st.title("Chatbot")
+# Streamlit UI
+st.title("Data Chatbot")
 
-if "history" not in st.session_state:
-    st.session_state.history = ChatMessageHistory()
+user_input = st.text_input("You: ", "")
 
-def on_send():
-    user_input = st.session_state.user_input
-    if user_input.lower() == 'exit':
-        st.stop()
-    else:
-        st.session_state.user_input = ""
-        st.session_state.history.add_user_message(user_input)
-        answer, _ = handle_nl_query(user_input, db_path, st.session_state.history)
-        st.session_state.history.add_ai_message(answer)
-        st.write(f"You: {user_input}")
-        st.write(f"Bot: {answer}")
-
-user_input = st.text_input("You:", key="user_input")
-if st.button("Send"):
-    on_send()
+if user_input:
+    answer, _ = handle_nl_query(user_input, db_path, history)
+    st.text_area("Bot:", value=answer, height=200, max_chars=None, key=None)
