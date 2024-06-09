@@ -1,4 +1,7 @@
 streamlit==1.14.0
 pandas==1.4.3
-langchain-openai==0.1.0
-langchain==0.1.17
+sqlite3
+langchain_openai
+langchain
+langchain_core
+langchain_community
