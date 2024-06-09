@@ -6,11 +6,10 @@ from langchain.chains import LLMChain
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, FewShotChatMessagePromptTemplate, PromptTemplate
-from operator import itemgetter
 import streamlit as st
 
-# Set the OpenAI API key
-os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+# Set the OpenAI API key from Streamlit secrets
+os.environ["OPENAI_API_KEY"] = st.secrets["general"]["OPENAI_API_KEY"]
 
 # Path to the SQLite database
 db_path = 'data.sqlite'  # Ensure this path is correct and the file is in the repo
@@ -42,7 +41,7 @@ examples = [
     },
     {
         'input': "what is price of `1968 Ford Mustang`",
-        "query": "SELECT `buyPrice`, `MSRP` FROM products WHERE `productName` = '1968 Ford Mustang' LIMIT 1;"
+        "query": "SELECT `buyPrice`, `MSRP` FROM products  WHERE `productName` = '1968 Ford Mustang' LIMIT 1;"
     }
 ]
 
