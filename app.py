@@ -1,7 +1,7 @@
+import streamlit as st
 import os
 import sqlite3
 import pandas as pd
-import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain_community.chat_message_histories import ChatMessageHistory
@@ -73,6 +73,7 @@ few_shot_prompt = FewShotChatMessagePromptTemplate(
     input_variables=["input"],
 )
 
+
 # Get table information from the SQLite database using Pandas
 def get_table_info(db_path):
     conn = sqlite3.connect(db_path)
@@ -88,6 +89,7 @@ def get_table_info(db_path):
         table_info += f"Table {table_name}: {column_info}\n"
     conn.close()
     return table_info
+
 
 table_info = get_table_info(db_path)
 
@@ -113,6 +115,7 @@ chain = (
         generate_query |
         rephrase_answer
 )
+
 
 # Function to handle natural language queries
 def handle_nl_query(nl_query, db_path, history):
@@ -156,6 +159,7 @@ def handle_nl_query(nl_query, db_path, history):
         history.add_ai_message(error_message)
 
         return error_message, pd.DataFrame()
+
 
 # Streamlit app code
 st.title("Chatbot")
