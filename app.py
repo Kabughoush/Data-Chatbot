@@ -42,7 +42,7 @@ examples = [
     },
     {
         'input': "what is price of `1968 Ford Mustang`",
-        "query": "SELECT `buyPrice`, `MSRP` FROM products WHERE `productName` = '1968 Ford Mustang' LIMIT 1;"
+        "query": "SELECT `buyPrice`, `MSRP` FROM products  WHERE `productName` = '1968 Ford Mustang' LIMIT 1;"
     }
 ]
 
@@ -73,7 +73,6 @@ few_shot_prompt = FewShotChatMessagePromptTemplate(
     input_variables=["input"],
 )
 
-
 # Get table information from the SQLite database using Pandas
 def get_table_info(db_path):
     conn = sqlite3.connect(db_path)
@@ -89,7 +88,6 @@ def get_table_info(db_path):
         table_info += f"Table {table_name}: {column_info}\n"
     conn.close()
     return table_info
-
 
 table_info = get_table_info(db_path)
 
@@ -109,13 +107,12 @@ history = ChatMessageHistory()
 
 # Create chains
 generate_query = LLMChain(llm=llm, prompt=final_prompt)
-rephrase_answer = LLMChain(llm=llm, prompt=ChatPromptTemplate.from_template(answer_template))
+rephrase_answer = LLMChain(llm=llm, prompt=PromptTemplate.from_template(answer_template))
 
 chain = (
         generate_query |
         rephrase_answer
 )
-
 
 # Function to handle natural language queries
 def handle_nl_query(nl_query, db_path, history):
@@ -160,12 +157,24 @@ def handle_nl_query(nl_query, db_path, history):
 
         return error_message, pd.DataFrame()
 
+# Streamlit app code
+st.title("Chatbot")
 
-# Streamlit UI
-st.title("Data Chatbot")
+if "history" not in st.session_state:
+    st.session_state.history = ChatMessageHistory()
 
-user_input = st.text_input("You: ", "")
+def on_send():
+    user_input = st.session_state.user_input
+    if user_input.lower() == 'exit':
+        st.stop()
+    else:
+        st.session_state.user_input = ""
+        st.session_state.history.add_user_message(user_input)
+        answer, _ = handle_nl_query(user_input, db_path, st.session_state.history)
+        st.session_state.history.add_ai_message(answer)
+        st.write(f"You: {user_input}")
+        st.write(f"Bot: {answer}")
 
-if user_input:
-    answer, _ = handle_nl_query(user_input, db_path, history)
-    st.text_area("Bot:", value=answer, height=200, max_chars=None, key=None)
+user_input = st.text_input("You:", key="user_input")
+if st.button("Send"):
+    on_send()
