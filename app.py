@@ -7,14 +7,13 @@ from langchain.memory import ChatMessageHistory
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, FewShotChatMessagePromptTemplate
 from operator import itemgetter
-import tkinter as tk
-from tkinter import scrolledtext, END
+import streamlit as st
 
 # Set the OpenAI API key
-os.environ["OPENAI_API_KEY"] = "OPENAI_API_KEY"
+os.environ["OPENAI_API_KEY"] = "YOUR_OPENAI_API_KEY"
 
 # Path to the SQLite database
-db_path = '/Users/khaled/Downloads/data.sqlite'
+db_path = '/app/data.sqlite'
 
 # Initialize the language model
 llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
@@ -74,7 +73,6 @@ few_shot_prompt = FewShotChatMessagePromptTemplate(
     input_variables=["input"],
 )
 
-
 # Get table information from the SQLite database using Pandas
 def get_table_info(db_path):
     conn = sqlite3.connect(db_path)
@@ -90,7 +88,6 @@ def get_table_info(db_path):
         table_info += f"Table {table_name}: {column_info}\n"
     conn.close()
     return table_info
-
 
 table_info = get_table_info(db_path)
 
@@ -117,7 +114,6 @@ chain = (
         rephrase_answer
 )
 
-
 # Function to handle natural language queries
 def handle_nl_query(nl_query, db_path, history):
     try:
@@ -126,7 +122,7 @@ def handle_nl_query(nl_query, db_path, history):
 
         # Generate SQL query from natural language query
         sql_query = generate_query.run({"input": nl_query, "messages": history.messages})
-        print(f"Generated SQL query: {sql_query}")
+        st.write(f"Generated SQL query: {sql_query}")
 
         # Check if the generated query is valid SQL
         if not sql_query.strip().lower().startswith("select"):
@@ -145,7 +141,7 @@ def handle_nl_query(nl_query, db_path, history):
 
         # Rephrase the SQL result into a natural language answer
         answer = rephrase_answer.run({"question": nl_query, "query": sql_query, "result": result_str})
-        print(f"Answer: {answer}")
+        st.write(f"Answer: {answer}")
 
         # Add the final answer to history
         history.add_ai_message(answer)
@@ -154,49 +150,22 @@ def handle_nl_query(nl_query, db_path, history):
 
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
-        print(error_message)
+        st.write(error_message)
 
         # Add the error message to history
         history.add_ai_message(error_message)
 
         return error_message, pd.DataFrame()
 
+# Streamlit interface
+def main():
+    st.title("SQL Query Chatbot")
+    st.write("Ask your questions and the chatbot will translate them into SQL queries and execute them.")
 
-# Function to start the chatbot in a separate window using tkinter
-def start_chatbot_ui():
-    def on_send():
-        user_input = input_box.get("1.0", END).strip()
-        if user_input.lower() == 'exit':
-            root.destroy()
-        else:
-            input_box.delete("1.0", END)
-            chat_box.config(state=tk.NORMAL)
-            chat_box.insert(tk.END, f"You: {user_input}\n")
-            answer, _ = handle_nl_query(user_input, db_path, history)
-            chat_box.insert(tk.END, f"Bot: {answer}\n")
-            chat_box.config(state=tk.DISABLED)
+    user_input = st.text_input("Your question:")
+    if st.button("Ask"):
+        answer, _ = handle_nl_query(user_input, db_path, history)
+        st.write(f"Bot: {answer}")
 
-    root = tk.Tk()
-    root.title("Chatbot")
-
-    chat_frame = tk.Frame(root)
-    chat_frame.pack(padx=10, pady=10)
-
-    chat_box = scrolledtext.ScrolledText(chat_frame, wrap=tk.WORD, state=tk.DISABLED, width=50, height=20)
-    chat_box.pack(padx=10, pady=10)
-
-    input_frame = tk.Frame(root)
-    input_frame.pack(padx=10, pady=10)
-
-    input_box = tk.Text(input_frame, wrap=tk.WORD, height=3, width=40)
-    input_box.pack(side=tk.LEFT, padx=10, pady=10)
-
-    send_button = tk.Button(input_frame, text="Send", command=on_send)
-    send_button.pack(side=tk.RIGHT, padx=10, pady=10)
-
-    root.mainloop()
-
-
-# Start the chatbot UI
-start_chatbot_ui()
-
+if __name__ == "__main__":
+    main()
