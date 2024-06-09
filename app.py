@@ -11,7 +11,7 @@ import tkinter as tk
 from tkinter import scrolledtext, END
 
 # Set the OpenAI API key
-os.environ["OPENAI_API_KEY"] = "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"
+os.environ["OPENAI_API_KEY"] = "OPENAI_API_KEY"
 
 # Path to the SQLite database
 db_path = '/Users/khaled/Downloads/data.sqlite'
