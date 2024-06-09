@@ -5,7 +5,7 @@ from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, FewShotChatMessagePromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, FewShotChatMessagePromptTemplate, PromptTemplate
 from operator import itemgetter
 import streamlit as st
 
