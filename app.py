@@ -2,18 +2,18 @@ import os
 import sqlite3
 import pandas as pd
 from langchain_openai import ChatOpenAI
-from langchain import LLMChain, PromptTemplate
-from langchain.memory import ChatMessageHistory
+from langchain.chains import LLMChain, RunnableSequence
+from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, FewShotChatMessagePromptTemplate
 from operator import itemgetter
 import streamlit as st
 
 # Set the OpenAI API key
-os.environ["OPENAI_API_KEY"] = "YOUR_OPENAI_API_KEY"
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
 # Path to the SQLite database
-db_path = '/app/data.sqlite'
+db_path = 'data.sqlite'  # Ensure this path is correct and the file is in the repo
 
 # Initialize the language model
 llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
@@ -42,7 +42,7 @@ examples = [
     },
     {
         'input': "what is price of `1968 Ford Mustang`",
-        "query": "SELECT `buyPrice`, `MSRP` FROM products  WHERE `productName` = '1968 Ford Mustang' LIMIT 1;"
+        "query": "SELECT `buyPrice`, `MSRP` FROM products WHERE `productName` = '1968 Ford Mustang' LIMIT 1;"
     }
 ]
 
@@ -122,7 +122,7 @@ def handle_nl_query(nl_query, db_path, history):
 
         # Generate SQL query from natural language query
         sql_query = generate_query.run({"input": nl_query, "messages": history.messages})
-        st.write(f"Generated SQL query: {sql_query}")
+        print(f"Generated SQL query: {sql_query}")
 
         # Check if the generated query is valid SQL
         if not sql_query.strip().lower().startswith("select"):
@@ -141,7 +141,7 @@ def handle_nl_query(nl_query, db_path, history):
 
         # Rephrase the SQL result into a natural language answer
         answer = rephrase_answer.run({"question": nl_query, "query": sql_query, "result": result_str})
-        st.write(f"Answer: {answer}")
+        print(f"Answer: {answer}")
 
         # Add the final answer to history
         history.add_ai_message(answer)
@@ -150,22 +150,25 @@ def handle_nl_query(nl_query, db_path, history):
 
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
-        st.write(error_message)
+        print(error_message)
 
         # Add the error message to history
         history.add_ai_message(error_message)
 
         return error_message, pd.DataFrame()
 
-# Streamlit interface
+# Streamlit app
 def main():
-    st.title("SQL Query Chatbot")
-    st.write("Ask your questions and the chatbot will translate them into SQL queries and execute them.")
+    st.title("Data Chatbot")
+    st.write("Ask your data-related questions below:")
 
-    user_input = st.text_input("Your question:")
-    if st.button("Ask"):
-        answer, _ = handle_nl_query(user_input, db_path, history)
-        st.write(f"Bot: {answer}")
+    user_input = st.text_area("You:", key="input")
+
+    if st.button("Send"):
+        if user_input:
+            st.write(f"You: {user_input}")
+            answer, _ = handle_nl_query(user_input, db_path, history)
+            st.write(f"Bot: {answer}")
 
 if __name__ == "__main__":
     main()
