@@ -1,0 +1,5 @@
+streamlit==1.14.0
+pandas==1.4.3
+sqlite3==3.37.2
+langchain-openai==0.1.0
+langchain==0.1.17
