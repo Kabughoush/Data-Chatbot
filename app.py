@@ -10,7 +10,8 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, FewS
 from operator import itemgetter
 
 # Set the OpenAI API key from Streamlit secrets
-os.environ["OPENAI_API_KEY"] = "api"
+os.environ["OPENAI_API_KEY"] = "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"
+
 
 # Path to the SQLite database
 db_path = 'data.sqlite'
