@@ -175,7 +175,7 @@ else:
             st.session_state.history.append(f"You: {user_input}")
             answer, _ = handle_nl_query(user_input, db_path, history)
             st.session_state.history.append(f"Bot: {answer}")
-            st.session_state.input_text = ""
+            st.session_state["input_text"] = ""
             st.experimental_rerun()
 
     # Display chat history
