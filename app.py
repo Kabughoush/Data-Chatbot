@@ -160,8 +160,19 @@ def handle_nl_query(nl_query, db_path, history):
 # Streamlit UI
 st.title("Data Chatbot")
 
-user_input = st.text_input("You: ", "")
+if "history" not in st.session_state:
+    st.session_state.history = []
+    st.session_state.history.append("Bot: Hello, how can I help you?")
 
-if user_input:
-    answer, _ = handle_nl_query(user_input, db_path, history)
-    st.text_area("Bot:", value=answer, height=200, max_chars=None, key=None)
+user_input = st.text_input("You: ", key="input_text")
+
+if st.button("Send"):
+    if user_input:
+        st.session_state.history.append(f"You: {user_input}")
+        answer, _ = handle_nl_query(user_input, db_path, history)
+        st.session_state.history.append(f"Bot: {answer}")
+        st.session_state.input_text = ""
+
+# Display chat history
+for message in st.session_state.history:
+    st.write(message)
