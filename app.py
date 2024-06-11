@@ -158,7 +158,7 @@ def handle_nl_query(nl_query, db_path, history):
         return error_message, pd.DataFrame()
 
 # Streamlit UI
-st.title("Data Chatbot")
+st.title("Business Insighter")
 
 # Initialize session state for chat history
 if "history" not in st.session_state:
