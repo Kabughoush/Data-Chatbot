@@ -164,14 +164,14 @@ if "history" not in st.session_state:
     st.session_state.history = []
     st.session_state.history.append("Bot: Hello, how can I help you?")
 
-user_input = st.text_input("You: ", key="input_text")
+user_input = st.text_input("You: ", key="input_text", value="")
 
 if st.button("Send"):
     if user_input:
         st.session_state.history.append(f"You: {user_input}")
         answer, _ = handle_nl_query(user_input, db_path, history)
         st.session_state.history.append(f"Bot: {answer}")
-        st.session_state["input_text"] = ""  # This line should be removed
+        st.session_state["input_text"] = ""
 
 # Display chat history
 for message in st.session_state.history:
