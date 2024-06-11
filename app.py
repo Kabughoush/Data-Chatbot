@@ -171,7 +171,7 @@ if st.button("Send"):
         st.session_state.history.append(f"You: {user_input}")
         answer, _ = handle_nl_query(user_input, db_path, history)
         st.session_state.history.append(f"Bot: {answer}")
-        st.session_state.input_text = ""
+        st.session_state["input_text"] = ""  # This line should be removed
 
 # Display chat history
 for message in st.session_state.history:
