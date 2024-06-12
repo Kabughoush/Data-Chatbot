@@ -160,28 +160,29 @@ def handle_nl_query(nl_query, db_path, history):
 # Streamlit UI
 st.title("Business Insighter")
 
-# Initialize session state for chat history
+# Initialize session state for chat history and user input if not already present
 if "history" not in st.session_state:
     st.session_state.history = []
+if "user_input" not in st.session_state:
+    st.session_state.user_input = ""
 
-# Display chat history
-for i, (user, answer) in enumerate(st.session_state.history):
-    st.markdown(f"**You:** {user}")
-    st.markdown(f"**Answer:** {answer}")
-
-# Function to process the input, either from pressing Enter or clicking Send
+# Function to process the input
 def process_input():
     user_input = st.session_state.user_input
     if user_input:  # Ensure the input is not empty
         answer, _ = handle_nl_query(user_input, db_path, history)
         st.session_state.history.append((user_input, answer))
-        st.session_state.user_input = ""  # Reset the input field
-        st.experimental_rerun()  # Rerun the app to update the UI
+        st.session_state.user_input = ""  # Clear the input after processing
 
 # Text input with on_change to handle Enter key press
-user_input = st.text_input("You: ", value="", key="user_input", on_change=process_input)
+user_input = st.text_input("You: ", value=st.session_state.user_input, key="user_input", on_change=process_input)
 
-# Button that also triggers the processing of input
+# Button that triggers the processing of input
 if st.button("Send"):
     process_input()
+    st.experimental_rerun()  # Use rerun here to refresh the page if needed
 
+# Display chat history
+for i, (user, answer) in enumerate(st.session_state.history):
+    st.markdown(f"**You:** {user}")
+    st.markdown(f"**Answer:** {answer}")
