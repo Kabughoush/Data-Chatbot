@@ -165,9 +165,9 @@ if "history" not in st.session_state:
     st.session_state.history = []
 
 # Display chat history
-for i, (user, bot) in enumerate(st.session_state.history):
+for i, (user, answer) in enumerate(st.session_state.history):
     st.markdown(f"**You:** {user}")
-    st.markdown(f"**Bot:** {bot}")
+    st.markdown(f"**answer:** {answer}")
 
 user_input = st.text_input("You: ", key="user_input")
 
