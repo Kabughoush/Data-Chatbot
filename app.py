@@ -175,11 +175,13 @@ def process_input():
     if user_input:  # Ensure the input is not empty
         answer, _ = handle_nl_query(user_input, db_path, history)
         st.session_state.history.append((user_input, answer))
-        st.experimental_rerun()
+        st.session_state.user_input = ""  # Reset the input field
+        st.experimental_rerun()  # Rerun the app to update the UI
 
 # Text input with on_change to handle Enter key press
-user_input = st.text_input("You: ", key="user_input", on_change=process_input)
+user_input = st.text_input("You: ", value="", key="user_input", on_change=process_input)
 
 # Button that also triggers the processing of input
 if st.button("Send"):
     process_input()
+
