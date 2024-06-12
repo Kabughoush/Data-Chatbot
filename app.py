@@ -159,51 +159,40 @@ def handle_nl_query(nl_query, db_path, history):
 
 import streamlit as st
 
-import streamlit as st
-
 # Streamlit page configuration
 st.set_page_config(page_title="Business Insighter", layout="wide")
 
 # Title of your app
 st.title("Business Insighter")
 
-# Initialize session state for chat history and user input if not already present
+# Initialize session state for chat history if not already present
 if "history" not in st.session_state:
     st.session_state.history = []
-if "user_input" not in st.session_state:
-    st.session_state.user_input = ""
-
-# Display chat history
-chat_container = st.container()
-with chat_container:
-    for user, answer in st.session_state.history:
-        st.text(f"You: {user}")
-        st.text(f"Answer: {answer}")
-
-# Placeholder for the input box at the bottom
-input_placeholder = st.empty()
 
 # Function to process the input
 def process_input():
     user_input = st.session_state.user_input
     if user_input.strip():  # Ensure the input is not empty
         answer, _ = handle_nl_query(user_input, db_path, history)
-        st.session_state.history.append((user_input, answer))  # Append to the end of the list
+        # Append both user input and system response to the history
+        st.session_state.history.append(("You", user_input))
+        st.session_state.history.append(("Answer", answer))
         st.session_state.user_input = ""  # Clear the input after processing
 
-# Input and button in the placeholder
-with input_placeholder.container():
+# Input and button in the placeholder at the bottom
+with st.container():
     col1, col2 = st.columns([5, 1])
     with col1:
-        user_input = st.text_input("You:", value="", key="user_input", on_change=process_input, placeholder="Type your message...")
+        user_input = st.text_input("Type your message...", value="", key="user_input", on_change=process_input)
     with col2:
         if st.button("Send"):
             process_input()
 
-# Scroll the chat container to the latest message on update
-if st.session_state.history:
-    chat_container.empty()
-    with chat_container:
-        for user, answer in st.session_state.history:
-            st.text(f"You: {user}")
-            st.text(f"Answer: {answer}")
+# Display chat history
+with st.container():
+    for role, message in st.session_state.history:
+        if role == "You":
+            st.text_area("", value=f"You: {message}", height=50, disabled=True)
+        else:
+            st.text_area("", value=f"Answer: {message}", height=50, disabled=True)
+
