@@ -159,6 +159,11 @@ def handle_nl_query(nl_query, db_path, history):
 
 import streamlit as st
 
+import streamlit as st
+
+# Streamlit page configuration
+st.set_page_config(page_title="Business Insighter", layout="wide")
+
 # Title of your app
 st.title("Business Insighter")
 
@@ -168,22 +173,37 @@ if "history" not in st.session_state:
 if "user_input" not in st.session_state:
     st.session_state.user_input = ""
 
+# Display chat history
+chat_container = st.container()
+with chat_container:
+    for user, answer in st.session_state.history:
+        st.text(f"You: {user}")
+        st.text(f"Answer: {answer}")
+
+# Placeholder for the input box at the bottom
+input_placeholder = st.empty()
+
 # Function to process the input
 def process_input():
     user_input = st.session_state.user_input
     if user_input.strip():  # Ensure the input is not empty
         answer, _ = handle_nl_query(user_input, db_path, history)
-        st.session_state.history.insert(0, (user_input, answer))  # Insert at the beginning of the list
+        st.session_state.history.append((user_input, answer))  # Append to the end of the list
         st.session_state.user_input = ""  # Clear the input after processing
 
-# Input and button at the bottom
-with st.container():
-    st.text_input("You:", value="", key="user_input", on_change=process_input, placeholder="Type your message...")
-    if st.button("Send"):
-        process_input()
+# Input and button in the placeholder
+with input_placeholder.container():
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        user_input = st.text_input("You:", value="", key="user_input", on_change=process_input, placeholder="Type your message...")
+    with col2:
+        if st.button("Send"):
+            process_input()
 
-# Display chat history
-with st.container():
-    for user, answer in st.session_state.history:
-        st.markdown(f"**You:** {user}")
-        st.markdown(f"**Answer:** {answer}")
+# Scroll the chat container to the latest message on update
+if st.session_state.history:
+    chat_container.empty()
+    with chat_container:
+        for user, answer in st.session_state.history:
+            st.text(f"You: {user}")
+            st.text(f"Answer: {answer}")
